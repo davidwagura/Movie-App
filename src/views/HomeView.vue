@@ -10,17 +10,43 @@
         </div>
       </router-link>
     </div>
-    <form action="@submit.prevent" class="search-box">
-      <input type="text" placeholder="what are you looking for?">
-      <input type="submit" value="search">
+
+    <form @submit.prevent="SearchMovies()" class="search-box">
+      <input type="text" placeholder="what are you looking for?" v-model="search"/>
+      <input type="submit" value="Search">
     </form>
+
+    <div class="movies-list">MOVIES</div>
   </div>
 </template>
 
 <script>
+  import  {ref} from 'vue';
+  import env from '@/env.js'
 
-export default {
-}
+  export default{
+    setup () {
+      const search = ref("");
+      const movies = ref([]);
+
+      const SearchMovies = () => {
+        if (search.value != "") {
+
+          fetch(`http://www.omdbapi.com/?apikey=${env.apikey}&s=$(search.value)`)
+            .then(response => response.json())
+            .then(data => {
+              console.log(data);
+            });
+        }
+      }
+      return {
+        search,
+        movies,
+        SearchMovies
+      }
+    }
+  }
+
 </script>
  <style lang="scss">
   .home {
@@ -57,5 +83,53 @@ export default {
         }
       }
     }
-  }
+    .search-box {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    
+      input {
+      display: block;
+      appearance: none;
+      border: none;
+      outline: none;
+      background: none;
+
+      &[type="text"] {
+        width: 100%;
+        color: #FFF;
+        background-color: #496583;
+        font-size: 20px;
+        padding: 10px 16px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        transition: 0.4s;
+
+        &::placeholder {
+          color: #f3f3f3
+        }
+        &:focus {
+          box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
+        }
+      }
+      &[type="submit"] {
+        width: 100%;
+        max-width: 300px;
+        background-color: rgb(57, 117, 57);
+        padding: 16px;
+        border-radius: 8px;
+        color: white;
+        font-size: 20px;
+        text-transform: uppercase;
+        transition: 0.4s;
+
+        &:active {
+          background-color: #3b8070;
+        }
+      }
+    }
+  } 
+}
 </style>
