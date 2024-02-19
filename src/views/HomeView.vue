@@ -8,12 +8,12 @@
           <h3>Naruto</h3>
           <p>Naruto Uzumaki is the main character of the beloved Naruto series and he is a resident of the Hidden Leaf Village in the Land of Fire. </p>
         </div>
-        <form action="@submit.prevent" class="search-box"></form>
-
-        <input type="text" placeholder="what are you looking for?">
-        <input type="text" value="search">
       </router-link>
     </div>
+    <form action="@submit.prevent" class="search-box">
+      <input type="text" placeholder="what are you looking for?">
+      <input type="submit" value="search">
+    </form>
   </div>
 </template>
 
