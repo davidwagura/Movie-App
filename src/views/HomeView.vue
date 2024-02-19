@@ -11,12 +11,27 @@
       </router-link>
     </div>
 
-    <form @submit.prevent="SearchMovies()" class="search-box">
+    <form @submit.prevent="SearchMovies()" class="search-box" name="search-form">
       <input type="text" placeholder="what are you looking for?" v-model="search"/>
       <input type="submit" value="Search">
     </form>
 
-    <div class="movies-list">MOVIES</div>
+    <div class="movies-list">
+      <div class="movie" v-for="movie in movies" :key="movie.imdbID">
+        <router-link :to="'/movie/' + movie.imdbID" class="movie-link">
+          <div class="product-image">
+            <img :src="movie.Poster" alt="Movie Poster" />
+            <div class="type">
+              {{ movie.type }}
+            </div>
+            <div class="detail">
+              <p class="y">{{ movie.year }}</p>
+              <h3>{{ movie.title }}</h3>
+            </div>
+          </div>
+      </router-link> 
+      </div>
+    </div>
   </div>
 </template>
 
@@ -35,7 +50,9 @@
           fetch(`http://www.omdbapi.com/?apikey=${env.apikey}&s=$(search.value)`)
             .then(response => response.json())
             .then(data => {
-              console.log(data);
+              movies.value = data.Search;
+              search.value = "";
+
             });
         }
       }
