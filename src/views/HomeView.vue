@@ -1,120 +1,71 @@
 <template>
   <div class="home">
     <div class="search-box">
-      <input
-        type="text"
-        v-model="search"
-        placeholder="Search for a movie..."
-        @click="SearchMovies"
-      />
+      <form @submit.prevent="SearchMovies">
+        <input
+          type="text"
+          v-model="search"
+          placeholder="Search for a movie..."
+        />
+        <button type="submit">Search</button>
+      </form>
     </div>
 
     <div v-if="loading" class="loading">Loading...</div>
     <div v-if="error" class="error">{{ error }}</div>
 
-    <div v-if="movie" class="movie-card">
-      <img :src="movie.imageurl[0]" alt="Movie Poster" class="movie-poster"/>
-      <div class="movie-details">
-        <h3 class="movie-title">{{ movie.title }}</h3>
-        <p class="movie-genres">{{ movie.genre.join(', ') }}</p>
-        <p class="movie-release">Released: {{ movie.released }}</p>
-        <p class="movie-rating">IMDB Rating: {{ movie.imdbrating }}</p>
-        <p class="movie-synopsis">{{ movie.synopsis }}</p>
+    <div v-if="movies.length > 0" class="movies-list">
+      <div v-for="movie in movies" :key="movie.imdbid" class="movie-card">
+        <img :src="movie.imageurl[0]" alt="Movie Poster" class="movie-poster" v-if="movie.imageurl && movie.imageurl.length"/>
+        <div class="movie-details">
+          <h3 class="movie-title">{{ movie.title }}</h3>
+          <p class="movie-genres">{{ movie.genre.join(', ') }}</p>
+          <p class="movie-release">Released: {{ movie.released }}</p>
+          <p class="movie-synopsis">{{ movie.synopsis }}</p>
+        </div>
       </div>
     </div>
   </div>
 </template>
+
 <script setup>
-import { ref, watch } from 'vue';
-// import env from '@/env.js';
+import { ref } from 'vue';
 
 const search = ref("");
-const movie = ref(null);
+const movies = ref([]);
 const error = ref(null);
 const loading = ref(false);
 
-// Function to debounce the search input
-// const debounce = (func, delay) => {
-//   let timer;
-//   return (...args) => {
-//     clearTimeout(timer);
-//     timer = setTimeout(() => func(...args), delay);
-//   };
-// };
-
 const SearchMovies = async () => {
-  if (search.value.trim() === "") return;
-
   loading.value = true;
   error.value = null;
-  movie.value = null;
+  movies.value = [];
 
   try {
-    const response = await fetch(`https://ott-details.p.rapidapi.com/${search.value.trim()}`, {
+    const response = await fetch(`https://ott-details.p.rapidapi.com/search?title=${search.value}&page=1`, {
       method: 'GET',
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'x-rapidapi-ua': 'RapidAPI-Playground',
         'x-rapidapi-key': 'e7494e734amshde50a14f5967d05p13138ejsn93c07c5317f8',
         'x-rapidapi-host': 'ott-details.p.rapidapi.com'
       }
     });
 
-    console.log(response);
-    
     const data = await response.json();
-    if (data.Response === "True") {
-      movie.value = data;
+    if (data.results) {
+      movies.value = data.results;
     } else {
-      error.value = data.Error;
+      error.value = "No movies found.";
     }
   } catch (err) {
     error.value = "An error occurred while fetching the movie details.";
   } finally {
     loading.value = false;
-    search.value = "";
   }
 };
-
-// Debounce the search function to avoid too many API calls
-// const debounceSearch = debounce(SearchMovies, 300);
-
-// Watch for changes in the search input and trigger debounced search
-watch(search);
 </script>
 
 <style lang="scss">
 .home {
-  .feature-card {
-    position: relative;
-    margin-top: 20px;
-
-    .featured-img {
-      display: block;
-      width: 100%;
-      height: auto;
-      object-fit: cover;
-    }
-
-    .detail {
-      padding: 16px;
-
-      h3 {
-        color: #000;
-        margin-bottom: 16px;
-      }
-
-      p {
-        color: #090909;
-      }
-
-      strong {
-        color: #000;
-      }
-    }
-  }
-
   .search-box {
     display: flex;
     flex-direction: column;
@@ -124,60 +75,86 @@ watch(search);
 
     input {
       display: block;
-      appearance: none;
-      border: none;
-      outline: none;
-      background: none;
+      width: 100%;
+      max-width: 300px;
+      padding: 10px 16px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 20px;
 
-      &[type="text"] {
-        width: 100%;
-        color: #000;
-        background-color: #d3d3d3;
-        font-size: 20px;
-        padding: 10px 16px;
-        border-radius: 8px;
-        margin-bottom: 15px;
-        transition: 0.4s;
-
-        &::placeholder {
-          color: #7a7a7a;
-        }
-
-        &:focus {
-          box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
-        }
+      &::placeholder {
+        color: #7a7a7a;
       }
 
-      &[type="submit"] {
-        width: 100%;
-        max-width: 300px;
-        background-color: #42B883;
-        padding: 16px;
-        border-radius: 8px;
-        color: #FFF;
-        font-size: 20px;
-        text-transform: uppercase;
-        transition: 0.4s;
+      &:focus {
+        box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
+      }
+    }
 
-        &:active {
-          background-color: #3B8070;
-        }
+    button {
+      width: 100%;
+      max-width: 300px;
+      background-color: #42B883;
+      padding: 16px;
+      border-radius: 8px;
+      color: #FFF;
+      font-size: 20px;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+
+      &:active {
+        background-color: #3B8070;
       }
     }
   }
 
-  .loading {
+  .loading,
+  .error {
     text-align: center;
     font-size: 20px;
-    color: #42B883;
     margin-top: 20px;
   }
 
   .error {
-    text-align: center;
-    font-size: 20px;
     color: red;
-    margin-top: 20px;
+  }
+
+  .movies-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .movie-card {
+    width: 300px;
+    margin: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+
+    .movie-poster {
+      width: 100%;
+      height: auto;
+    }
+
+    .movie-details {
+      padding: 16px;
+
+      .movie-title {
+        font-size: 24px;
+        margin-bottom: 8px;
+      }
+
+      .movie-genres,
+      .movie-release,
+      .movie-synopsis {
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+    }
   }
 }
 </style>
