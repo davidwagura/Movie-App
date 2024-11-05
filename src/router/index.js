@@ -20,7 +20,6 @@ const routes = [
     component: LocalMovies
   }
 
-  // localMovies, local-movies
 ]
 
 const router = createRouter({
